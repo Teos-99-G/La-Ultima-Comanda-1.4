@@ -124,7 +124,7 @@ const App: React.FC = () => {
       </header>
 
       {/* CONTENIDO CON ESPACIO PARA HEADER Y FOOTER */}
-      <main className="flex-1 overflow-y-auto no-scrollbar p-4 pt-18 pb-24 bg-slate-50">
+      <main className="flex-1 overflow-y-auto no-scrollbar p-4 pt-19 pb-24 bg-slate-50">
 
         {activeView === 'admin' && (
           <AdminView 
