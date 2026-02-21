@@ -48,9 +48,7 @@ const App: React.FC = () => {
     });
   };
 
-  const resetSales = () => {
-    setSales({});
-  };
+  const resetSales = () => setSales({});
 
   const saveConfigToFile = () => {
     const config = { menus, dishes };
@@ -80,12 +78,12 @@ const App: React.FC = () => {
         } else {
           alert('El archivo no tiene el formato correcto.');
         }
-      } catch (err) {
+      } catch {
         alert('Error al leer el archivo. Intenta con otro respaldo.');
       }
     };
     reader.readAsText(file);
-    event.target.value = ''; 
+    event.target.value = '';
   };
 
   const cycleTheme = () => {
@@ -95,8 +93,11 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen max-w-md mx-auto bg-white shadow-2xl relative overflow-hidden text-slate-900">
-      <header className={`bg-${themeColor}-600 text-white p-4 shadow-md z-10 flex justify-between items-center transition-colors duration-500`}>
+    <div className="flex flex-col min-h-screen max-w-md mx-auto bg-white shadow-2xl relative text-slate-900">
+
+      {/* HEADER FIJO */}
+      <header className={`fixed top-0 left-0 right-0 max-w-md mx-auto bg-${themeColor}-600 text-white p-4 shadow-md z-30 flex justify-between items-center transition-colors duration-500`}>
+        
         <div className="flex items-center gap-2 flex-1">
           <input 
             type="text"
@@ -106,6 +107,7 @@ const App: React.FC = () => {
             placeholder="NOMBRE DEL LOCAL"
           />
         </div>
+
         <div className="flex items-center gap-2">
           <button 
             onClick={cycleTheme}
@@ -114,11 +116,16 @@ const App: React.FC = () => {
           >
             <Palette className="w-4 h-4" />
           </button>
-          <div className={`bg-${themeColor}-500 px-2 py-1 rounded text-[10px] font-bold shrink-0`}>V 1.4</div>
+
+          <div className={`bg-${themeColor}-500 px-2 py-1 rounded text-[10px] font-bold shrink-0`}>
+            V 1.4
+          </div>
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto no-scrollbar p-4 pb-24 bg-slate-50">
+      {/* CONTENIDO CON ESPACIO PARA HEADER Y FOOTER */}
+      <main className="flex-1 overflow-y-auto no-scrollbar p-4 pt-24 pb-24 bg-slate-50">
+
         {activeView === 'admin' && (
           <AdminView 
             menus={menus} 
@@ -130,9 +137,11 @@ const App: React.FC = () => {
             themeColor={themeColor}
           />
         )}
+
         {activeView === 'sales' && (
           <SalesView menus={menus} dishes={dishes} sales={sales} updateSale={updateSale} themeColor={themeColor} />
         )}
+
         {activeView === 'report' && (
           <ReportView 
             appName={appName}
@@ -143,19 +152,29 @@ const App: React.FC = () => {
             themeColor={themeColor}
           />
         )}
+
       </main>
 
-      <nav className="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around p-2 z-20 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
+      {/* MENU INFERIOR FIJO */}
+      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-slate-200 flex justify-around p-2 z-30 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
+
         <button onClick={() => setActiveView('admin')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeView === 'admin' ? `bg-${themeColor}-50 text-${themeColor}-600` : 'text-slate-400'}`}>
-          <Settings className="w-6 h-6" /><span className="text-[10px] mt-1 font-bold">AJUSTES</span>
+          <Settings className="w-6 h-6" />
+          <span className="text-[10px] mt-1 font-bold">AJUSTES</span>
         </button>
+
         <button onClick={() => setActiveView('sales')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeView === 'sales' ? `bg-${themeColor}-50 text-${themeColor}-600` : 'text-slate-400'}`}>
-          <ShoppingCart className="w-6 h-6" /><span className="text-[10px] mt-1 font-bold">VENTAS</span>
+          <ShoppingCart className="w-6 h-6" />
+          <span className="text-[10px] mt-1 font-bold">VENTAS</span>
         </button>
+
         <button onClick={() => setActiveView('report')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeView === 'report' ? `bg-${themeColor}-50 text-${themeColor}-600` : 'text-slate-400'}`}>
-          <BarChart3 className="w-6 h-6" /><span className="text-[10px] mt-1 font-bold">CIERRE</span>
+          <BarChart3 className="w-6 h-6" />
+          <span className="text-[10px] mt-1 font-bold">CIERRE</span>
         </button>
+
       </nav>
+
     </div>
   );
 };
