@@ -138,6 +138,7 @@ const ReportView: React.FC<ReportViewProps> = ({ appName, menus, dishes, sales, 
         ['', '', 'CANTIDAD TOTAL:', totalQty.toString()],
         ['', '', 'VALOR TOTAL:', `$${totalMoney.toLocaleString()}`]
       ],
+      showFoot: 'lastPage',
       theme: 'striped',
       headStyles: { fillColor: primaryRGB },
       footStyles: { fillColor: [31, 41, 55], textColor: [255, 255, 255], fontStyle: 'bold' }
