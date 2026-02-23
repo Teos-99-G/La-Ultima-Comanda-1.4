@@ -11,11 +11,12 @@ interface AdminViewProps {
   onSaveConfig: () => void;
   onLoadConfig: (e: React.ChangeEvent<HTMLInputElement>) => void;
   themeColor: ThemeColor;
+  onRequestLoad: () => void;
 }
 
 const generateId = () => Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
 
-const AdminView: React.FC<AdminViewProps> = ({ menus, setMenus, dishes, setDishes, onSaveConfig, onLoadConfig, themeColor }) => {
+const AdminView: React.FC<AdminViewProps> = ({ menus, setMenus, dishes, setDishes, onSaveConfig, onLoadConfig, themeColor, onRequestLoad }) => {
   const [newMenuName, setNewMenuName] = useState('');
   const [editingMenuId, setEditingMenuId] = useState<string | null>(null);
   const [expandedMenuId, setExpandedMenuId] = useState<string | null>(null);
@@ -85,15 +86,19 @@ const AdminView: React.FC<AdminViewProps> = ({ menus, setMenus, dishes, setDishe
           >
             <Download className="w-4 h-4" /> Guardar
           </button>
-          <label className="flex items-center justify-center gap-2 bg-slate-600 text-white py-4 rounded-xl text-xs font-bold cursor-pointer active:bg-slate-500 shadow-md">
+         <button 
+            onClick={onRequestLoad}
+            className="flex items-center justify-center gap-2 bg-slate-600 text-white py-4 rounded-xl text-xs font-bold cursor-pointer active:bg-slate-500 shadow-md"
+          >
             <Upload className="w-4 h-4" /> Cargar
             <input 
+              id="load-file-input"
               type="file" 
               accept=".txt" 
               onChange={onLoadConfig} 
               className="hidden" 
             />
-          </label>
+          </button>
         </div>
       </section>
 
