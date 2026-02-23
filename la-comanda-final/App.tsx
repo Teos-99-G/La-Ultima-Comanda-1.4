@@ -127,7 +127,11 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen max-w-md mx-auto bg-white shadow-2xl relative text-slate-900">
+   <div className="flex flex-col h-[100dvh] w-full max-w-md mx-auto bg-white shadow-2xl relative overflow-hidden text-slate-900">
+      <header 
+        className={`bg-${themeColor}-600 text-white p-4 shadow-md z-10 flex justify-between items-center transition-colors duration-500`}
+        style={{ paddingTop: 'calc(1rem + var(--safe-top))' }}
+      >
 
       {/* HEADER FIJO */}
       <header className={`fixed top-0 left-0 right-0 max-w-md mx-auto bg-${themeColor}-600 text-white p-4 shadow-md z-30 flex justify-between items-center transition-colors duration-500`}>
@@ -167,7 +171,7 @@ const App: React.FC = () => {
       </header>
 
       {/* CONTENIDO CON ESPACIO PARA HEADER Y FOOTER */}
-      <main className="flex-1 overflow-y-auto no-scrollbar p-4 pt-20 pb-24 bg-slate-50">
+      <main className="flex-1 overflow-y-auto no-scrollbar p-4 bg-slate-50">
 
         {activeView === 'admin' && (
           <AdminView 
@@ -234,9 +238,11 @@ const App: React.FC = () => {
           </div>
         </div>
       )}
-      
-      {/* MENU INFERIOR FIJO */}
-      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-slate-200 flex justify-around p-2 z-30 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
+
+        <nav 
+        className="bg-white border-t border-slate-200 flex justify-around p-2 z-20 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]"
+        style={{ paddingBottom: 'calc(0.5rem + var(--safe-bottom))' }}
+      >
 
         <button onClick={() => setActiveView('admin')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeView === 'admin' ? `bg-${themeColor}-50 text-${themeColor}-600` : 'text-slate-400'}`}>
           <Settings className="w-6 h-6" />
