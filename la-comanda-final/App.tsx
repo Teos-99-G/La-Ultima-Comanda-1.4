@@ -6,7 +6,7 @@ import AdminView from './components/AdminView';
 import SalesView from './components/SalesView';
 import ReportView from './components/ReportView';
 
-const THEMES: ThemeColor[] = ['indigo', 'emerald', 'rose', 'amber', 'slate', 'violet', 'cyan','blue', 'green', 'red', 'yellow', 'pink', 'purple', 'teal','orange', 'lime', 'fuchsia', 'sky', 'stone', 'neutral'];
+const THEMES: ThemeColor[] = ['indigo', 'emerald', 'rose', 'amber', 'slate', 'violet', 'cyan','blue', 'green', 'red', 'yellow', 'pink', 'purple', 'teal','orange', 'lime', 'fuchsia', 'sky', 'stone'];
 
 const App: React.FC = () => {
   const [activeView, setActiveView] = useState<ViewType>('sales');
