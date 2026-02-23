@@ -12,9 +12,11 @@ interface ReportViewProps {
   sales: Record<string, number>;
   onResetSales: () => void;
   themeColor: ThemeColor;
+  hasStoragePermission: boolean;
+  onRequestPermission: () => void;
 }
 
-const ReportView: React.FC<ReportViewProps> = ({ appName, menus, dishes, sales, onResetSales, themeColor }) => {
+const ReportView: React.FC<ReportViewProps> = ({ appName, menus, dishes, sales, onResetSales, themeColor, hasStoragePermission, onRequestPermission }) => {
   const [isConfirmingReset, setIsConfirmingReset] = useState(false);
 
   const getGrandTotal = () => {
@@ -55,6 +57,10 @@ const ReportView: React.FC<ReportViewProps> = ({ appName, menus, dishes, sales, 
     .slice(0, 3);
 
   const exportPDF = () => {
+    if (!hasStoragePermission) {
+      onRequestPermission();
+      return;
+    }
     const doc = new jsPDF();
     const dateStr = new Date().toLocaleString();
     const totalQty = totalUnitsAll;
