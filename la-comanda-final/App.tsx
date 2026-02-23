@@ -20,6 +20,11 @@ const App: React.FC = () => {
   });
   
   const [showAuthor, setShowAuthor] = useState(false);
+  const [hasStoragePermission, setHasStoragePermission] = useState<boolean>(() => {
+    return localStorage.getItem('resto_storage_permission') === 'true';
+  });
+  const [showPermissionModal, setShowPermissionModal] = useState(false);
+  const [pendingAction, setPendingAction] = useState<{ type: string, data?: any } | null>(null);
   
   const [menus, setMenus] = useState<Menu[]>(() => {
     const saved = localStorage.getItem('resto_menus');
@@ -52,6 +57,33 @@ const App: React.FC = () => {
 
   const resetSales = () => setSales({});
 
+  const requestPermission = (action: { type: string, data?: any }) => {
+    if (hasStoragePermission) {
+      executeAction(action);
+    } else {
+      setPendingAction(action);
+      setShowPermissionModal(true);
+    }
+  };
+
+  const grantPermission = () => {
+    setHasStoragePermission(true);
+    localStorage.setItem('resto_storage_permission', 'true');
+    setShowPermissionModal(false);
+    if (pendingAction) {
+      executeAction(pendingAction);
+      setPendingAction(null);
+    }
+  };
+
+  const executeAction = (action: { type: string, data?: any }) => {
+    if (action.type === 'save') saveConfigToFile();
+    if (action.type === 'load') document.getElementById('load-file-input')?.click();
+    if (action.type === 'export') {
+      // This will be handled by passing a trigger to ReportView or similar
+      // For now, we'll just let the components handle their own checks if we pass the state
+    }
+  };
   const saveConfigToFile = () => {
     const config = { menus, dishes };
     const blob = new Blob([JSON.stringify(config)], { type: 'text/plain' });
@@ -143,9 +175,10 @@ const App: React.FC = () => {
             setMenus={setMenus} 
             dishes={dishes} 
             setDishes={setDishes}
-            onSaveConfig={saveConfigToFile}
+             onSaveConfig={() => requestPermission({ type: 'save' })}
             onLoadConfig={loadConfigFromFile}
             themeColor={themeColor}
+            onRequestLoad={() => requestPermission({ type: 'load' })}
           />
         )}
 
@@ -161,11 +194,47 @@ const App: React.FC = () => {
             sales={sales}
             onResetSales={resetSales}
             themeColor={themeColor}
+            hasStoragePermission={hasStoragePermission}
+            onRequestPermission={() => setShowPermissionModal(true)}
           />
         )}
 
       </main>
-
+{showPermissionModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/80 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className={`bg-${themeColor}-600 p-6 text-white text-center`}>
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Settings className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-bold">Permiso de Almacenamiento</h3>
+            </div>
+            <div className="p-6">
+              <p className="text-slate-600 text-sm leading-relaxed mb-6">
+                Para poder <b>guardar respaldos</b>, <b>cargar menús</b> y <b>exportar reportes PDF</b>, la aplicación necesita permiso para interactuar con el almacenamiento de tu dispositivo.
+              </p>
+              <div className="space-y-3">
+                <button 
+                  onClick={grantPermission}
+                  className={`w-full py-4 bg-${themeColor}-600 text-white rounded-2xl font-bold shadow-lg active:scale-95 transition-transform`}
+                >
+                  CONCEDER PERMISO
+                </button>
+                <button 
+                  onClick={() => {
+                    setShowPermissionModal(false);
+                    setPendingAction(null);
+                  }}
+                  className="w-full py-4 bg-slate-100 text-slate-500 rounded-2xl font-bold active:scale-95 transition-transform"
+                >
+                  AHORA NO
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* MENU INFERIOR FIJO */}
       <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-slate-200 flex justify-around p-2 z-30 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
 
