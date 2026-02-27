@@ -29,6 +29,6 @@ export interface SavedReport {
   };
 }
 
-export type ViewType = 'admin' | 'sales' | 'report';
+export type ViewType = 'admin' | 'sales' | 'report' | 'calculator';
 
 export type ThemeColor = 'indigo' | 'emerald' | 'rose' | 'amber' | 'slate' | 'violet' | 'cyan';
