@@ -24,6 +24,7 @@ const ReportView: React.FC<ReportViewProps> = ({ appName, menus, dishes, sales, 
   };
 
   const totalUnitsAll = Object.values(sales).reduce((a: number, b: number) => a + b, 0);
+  
   const totalUnitsRegular = dishes.reduce((sum, dish) => {
     const qty = sales[dish.id] || 0;
     if (qty > 0) {
