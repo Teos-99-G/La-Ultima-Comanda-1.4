@@ -166,7 +166,7 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto no-scrollbar p-4 pb-24 bg-slate-50">
+      <main className="flex-1 overflow-y-auto no-scrollbar p-4 pb-20 bg-slate-50">
         {activeView === 'admin' && (
           <AdminView 
             menus={menus} 
