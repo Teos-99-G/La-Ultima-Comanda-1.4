@@ -177,23 +177,24 @@ const CalculatorView: React.FC<CalculatorViewProps> = ({ menus, dishes, themeCol
         })}
       </div>
 
-      {/* Floating Modern Checkout Panel */}
+      {/* Floating Modern Checkout Panel - Changed to sticky to stay within container */}
       <AnimatePresence>
         {total > 0 && (
           <motion.div 
-            initial={{ y: 100, opacity: 0 }}
+            initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 100, opacity: 0 }}
-            className="fixed bottom-24 left-1/2 -translate-x-1/2 w-full max-w-md z-30 px-4 space-y-3"
+            exit={{ y: 50, opacity: 0 }}
+            className="sticky bottom-4 left-0 right-0 z-30 px-0 space-y-3 mt-4"
           >
-            {/* Change Calculator Card - Refined */}
-            <div className="bg-white/95 backdrop-blur-xl rounded-[2.5rem] shadow-2xl border border-white p-5 flex flex-col gap-4">
+            <div className="max-w-md mx-auto space-y-3">
+              {/* Change Calculator Card - Refined */}
+              <div className="bg-white/95 backdrop-blur-xl rounded-[2.5rem] shadow-2xl border border-slate-200 p-5 flex flex-col gap-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div className={`p-1.5 bg-${themeColor}-50 rounded-lg`}>
                     <Banknote className={`w-4 h-4 text-${themeColor}-600`} />
                   </div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Calculadora de Vueltas</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Vueltas</span>
                 </div>
                 <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
                   <motion.button 
@@ -274,7 +275,8 @@ const CalculatorView: React.FC<CalculatorViewProps> = ({ menus, dishes, themeCol
                 <X className="w-6 h-6" />
               </motion.button>
             </div>
-          </motion.div>
+          </div>
+        </motion.div>
         )}
       </AnimatePresence>
 
