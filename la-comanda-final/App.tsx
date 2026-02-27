@@ -1,12 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
-import { Settings, ShoppingCart, BarChart3, Palette } from 'lucide-react';
+import { Settings, ShoppingCart, BarChart3, Palette, Calculator } from 'lucide-react';
 import { Menu, Dish, ViewType, ThemeColor } from './types';
 import AdminView from './components/AdminView';
 import SalesView from './components/SalesView';
 import ReportView from './components/ReportView';
+import CalculatorView from './components/CalculatorView';
 
-const THEMES: ThemeColor[] = ['indigo', 'emerald', 'rose', 'amber', 'slate', 'violet', 'cyan','blue', 'green', 'red', 'yellow', 'pink', 'purple', 'teal','orange', 'lime', 'fuchsia', 'sky', 'stone'];
+const THEMES: ThemeColor[] = ['indigo', 'emerald', 'rose', 'amber', 'slate', 'violet', 'cyan'];
 
 const App: React.FC = () => {
   const [activeView, setActiveView] = useState<ViewType>('sales');
@@ -14,18 +15,18 @@ const App: React.FC = () => {
   const [themeColor, setThemeColor] = useState<ThemeColor>(() => {
     return (localStorage.getItem('resto_theme') as ThemeColor) || 'indigo';
   });
-  
+
   const [appName, setAppName] = useState<string>(() => {
     return localStorage.getItem('resto_app_name') || '';
   });
-  
+
   const [showAuthor, setShowAuthor] = useState(false);
   const [hasStoragePermission, setHasStoragePermission] = useState<boolean>(() => {
     return localStorage.getItem('resto_storage_permission') === 'true';
   });
   const [showPermissionModal, setShowPermissionModal] = useState(false);
   const [pendingAction, setPendingAction] = useState<{ type: string, data?: any } | null>(null);
-  
+
   const [menus, setMenus] = useState<Menu[]>(() => {
     const saved = localStorage.getItem('resto_menus');
     try { return saved ? JSON.parse(saved) : []; } catch { return []; }
@@ -55,7 +56,9 @@ const App: React.FC = () => {
     });
   };
 
-  const resetSales = () => setSales({});
+  const resetSales = () => {
+    setSales({});
+  };
 
   const requestPermission = (action: { type: string, data?: any }) => {
     if (hasStoragePermission) {
@@ -84,6 +87,7 @@ const App: React.FC = () => {
       // For now, we'll just let the components handle their own checks if we pass the state
     }
   };
+
   const saveConfigToFile = () => {
     const config = { menus, dishes };
     const blob = new Blob([JSON.stringify(config)], { type: 'text/plain' });
@@ -112,12 +116,12 @@ const App: React.FC = () => {
         } else {
           alert('El archivo no tiene el formato correcto.');
         }
-      } catch {
+      } catch (err) {
         alert('Error al leer el archivo. Intenta con otro respaldo.');
       }
     };
     reader.readAsText(file);
-    event.target.value = '';
+    event.target.value = ''; 
   };
 
   const cycleTheme = () => {
@@ -127,15 +131,8 @@ const App: React.FC = () => {
   };
 
   return (
-   <div className="flex flex-col h-[100dvh] w-full max-w-md mx-auto bg-white shadow-2xl relative overflow-hidden text-slate-900">
-      <header 
-        className={`bg-${themeColor}-600 text-white p-4 shadow-md z-10 flex justify-between items-center transition-colors duration-500`}
-        style={{ paddingTop: 'calc(1rem + var(--safe-top))' }}
-      >
-
-      {/* HEADER FIJO */}
-      <header className={`fixed top-0 left-0 right-0 max-w-md mx-auto bg-${themeColor}-600 text-white p-4 shadow-md z-30 flex justify-between items-center transition-colors duration-500`}>
-        
+    <div className="flex flex-col h-screen max-w-md mx-auto bg-white shadow-2xl relative overflow-hidden text-slate-900">
+      <header className={`bg-${themeColor}-600 text-white p-4 shadow-md z-10 flex justify-between items-center transition-colors duration-500`}>
         <div className="flex items-center gap-2 flex-1">
           <input 
             type="text"
@@ -145,7 +142,6 @@ const App: React.FC = () => {
             placeholder="NOMBRE DEL LOCAL"
           />
         </div>
-
         <div className="flex items-center gap-2">
           <button 
             onClick={cycleTheme}
@@ -170,26 +166,22 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      {/* CONTENIDO CON ESPACIO PARA HEADER Y FOOTER */}
-      <main className="flex-1 overflow-y-auto no-scrollbar p-4 bg-slate-50">
-
+      <main className="flex-1 overflow-y-auto no-scrollbar p-4 pb-24 bg-slate-50">
         {activeView === 'admin' && (
           <AdminView 
             menus={menus} 
             setMenus={setMenus} 
             dishes={dishes} 
             setDishes={setDishes}
-             onSaveConfig={() => requestPermission({ type: 'save' })}
+            onSaveConfig={() => requestPermission({ type: 'save' })}
             onLoadConfig={loadConfigFromFile}
             themeColor={themeColor}
             onRequestLoad={() => requestPermission({ type: 'load' })}
           />
         )}
-
         {activeView === 'sales' && (
           <SalesView menus={menus} dishes={dishes} sales={sales} updateSale={updateSale} themeColor={themeColor} />
         )}
-
         {activeView === 'report' && (
           <ReportView 
             appName={appName}
@@ -202,9 +194,16 @@ const App: React.FC = () => {
             onRequestPermission={() => setShowPermissionModal(true)}
           />
         )}
-
+        {activeView === 'calculator' && (
+          <CalculatorView 
+            menus={menus} 
+            dishes={dishes} 
+            themeColor={themeColor} 
+          />
+        )}
       </main>
-{showPermissionModal && (
+
+      {showPermissionModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/80 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-300">
             <div className={`bg-${themeColor}-600 p-6 text-white text-center`}>
@@ -239,28 +238,20 @@ const App: React.FC = () => {
         </div>
       )}
 
-        <nav 
-        className="bg-white border-t border-slate-200 flex justify-around p-2 z-20 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]"
-        style={{ paddingBottom: 'calc(0.5rem + var(--safe-bottom))' }}
-      >
-
+      <nav className="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around p-2 z-20 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
         <button onClick={() => setActiveView('admin')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeView === 'admin' ? `bg-${themeColor}-50 text-${themeColor}-600` : 'text-slate-400'}`}>
-          <Settings className="w-6 h-6" />
-          <span className="text-[10px] mt-1 font-bold">AJUSTES</span>
+          <Settings className="w-6 h-6" /><span className="text-[10px] mt-1 font-bold">AJUSTES</span>
         </button>
-
         <button onClick={() => setActiveView('sales')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeView === 'sales' ? `bg-${themeColor}-50 text-${themeColor}-600` : 'text-slate-400'}`}>
-          <ShoppingCart className="w-6 h-6" />
-          <span className="text-[10px] mt-1 font-bold">VENTAS</span>
+          <ShoppingCart className="w-6 h-6" /><span className="text-[10px] mt-1 font-bold">VENTAS</span>
         </button>
-
+        <button onClick={() => setActiveView('calculator')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeView === 'calculator' ? `bg-${themeColor}-50 text-${themeColor}-600` : 'text-slate-400'}`}>
+          <Calculator className="w-6 h-6" /><span className="text-[10px] mt-1 font-bold">CALC</span>
+        </button>
         <button onClick={() => setActiveView('report')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeView === 'report' ? `bg-${themeColor}-50 text-${themeColor}-600` : 'text-slate-400'}`}>
-          <BarChart3 className="w-6 h-6" />
-          <span className="text-[10px] mt-1 font-bold">CIERRE</span>
+          <BarChart3 className="w-6 h-6" /><span className="text-[10px] mt-1 font-bold">CIERRE</span>
         </button>
-
       </nav>
-
     </div>
   );
 };
