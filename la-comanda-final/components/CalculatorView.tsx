@@ -1,7 +1,8 @@
 
-import React, { useState } from 'react';
-import { Calculator, Plus, Minus, Search, Trash2, X, Banknote } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Calculator, Plus, Minus, Search, Trash2, X, Banknote, ShoppingBag, ReceiptText } from 'lucide-react';
 import { Menu, Dish, ThemeColor } from '../types';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface CalculatorViewProps {
   menus: Menu[];
@@ -32,156 +33,261 @@ const CalculatorView: React.FC<CalculatorViewProps> = ({ menus, dishes, themeCol
     setReceivedAmount('');
   };
 
-  const filteredDishes = dishes.filter(d => 
+  const filteredDishes = useMemo(() => dishes.filter(d => 
     (searchQuery ? d.name.toLowerCase().includes(searchQuery.toLowerCase()) : d.menuId === activeTab)
-  );
+  ), [dishes, searchQuery, activeTab]);
 
-  const total = Object.entries(calcItems).reduce((acc, [dishId, qty]) => {
+  const total = useMemo(() => Object.entries(calcItems).reduce((acc, [dishId, qty]) => {
     const dish = dishes.find(d => d.id === dishId);
     if (!dish) return acc;
     return acc + (dish.price * (qty as number));
-  }, 0);
+  }, 0), [calcItems, dishes]);
 
   const change = receivedAmount ? parseFloat(receivedAmount) - total : 0;
 
+  const totalItems = Object.values(calcItems).reduce((a: number, b: number) => a + b, 0);
+
   return (
     <div className="flex flex-col h-full relative">
-      {/* Header Section */}
-      <div className="sticky top-0 z-20 bg-slate-50 pb-2 -mt-4 pt-4 -mx-4 px-4 shadow-sm mb-4">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Calculator className={`w-5 h-5 text-${themeColor}-600`} />
-            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">Calculadora de Cuenta</h2>
+      {/* Header Section - More Modern */}
+      <div className="sticky top-0 z-20 bg-slate-50/80 backdrop-blur-md pb-4 -mt-4 pt-4 -mx-4 px-4 mb-4 border-b border-slate-200/50">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className={`p-2 bg-${themeColor}-100 rounded-xl`}>
+              <Calculator className={`w-5 h-5 text-${themeColor}-600`} />
+            </div>
+            <div>
+              <h2 className="text-base font-black text-slate-800 leading-tight">Calculadora</h2>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Cuenta Rápida</p>
+            </div>
           </div>
-          <button 
+          <motion.button 
+            whileTap={{ scale: 0.9 }}
             onClick={clearCalc}
-            className="text-[10px] font-bold text-red-500 uppercase tracking-widest flex items-center gap-1 active:scale-95"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-500 rounded-full text-[10px] font-black uppercase tracking-wider border border-red-100 transition-colors hover:bg-red-100"
           >
-            <Trash2 className="w-3 h-3" /> Limpiar
-          </button>
+            <Trash2 className="w-3 h-3" /> Borrar Todo
+          </motion.button>
         </div>
 
-        <div className="relative mb-3">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+        <div className="relative mb-4 group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 transition-colors group-focus-within:text-indigo-500" />
           <input 
             type="text" 
-            placeholder="Buscar plato..."
-            className={`w-full pl-10 pr-4 py-2 bg-slate-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-${themeColor}-500`}
+            placeholder="¿Qué busca el cliente?"
+            className={`w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-${themeColor}-500/20 focus:border-${themeColor}-500 transition-all`}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
 
         {!searchQuery && (
-          <div className="flex overflow-x-auto no-scrollbar gap-2 pb-1">
+          <div className="flex overflow-x-auto no-scrollbar gap-2 py-1">
             {menus.map(menu => (
-              <button
+              <motion.button
                 key={menu.id}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setActiveTab(menu.id)}
-                className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all ${
+                className={`px-5 py-2.5 rounded-2xl whitespace-nowrap text-xs font-bold transition-all border ${
                   activeTab === menu.id 
-                    ? (menu.isSpecial ? 'bg-amber-500 text-white' : `bg-${themeColor}-600 text-white`) 
-                    : 'bg-slate-100 text-slate-600'
+                    ? (menu.isSpecial ? 'bg-amber-500 border-amber-600 text-white shadow-lg shadow-amber-200' : `bg-${themeColor}-600 border-${themeColor}-700 text-white shadow-lg shadow-${themeColor}-200`) 
+                    : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
                 }`}
               >
                 {menu.name}
-              </button>
+              </motion.button>
             ))}
           </div>
         )}
       </div>
 
-      {/* Dish Selection List */}
-      <div className="grid grid-cols-1 gap-2 pb-80">
+      {/* Dish Selection Grid - 2 Columns for better POS feel */}
+      <div className="grid grid-cols-2 gap-3 pb-96">
         {filteredDishes.map(dish => {
           const qty = calcItems[dish.id] || 0;
+          const menu = menus.find(m => m.id === dish.menuId);
+          const isSpecial = menu?.isSpecial;
 
           return (
-            <div key={dish.id} className={`bg-white p-3 rounded-xl border flex items-center justify-between ${qty > 0 ? `border-${themeColor}-200 bg-${themeColor}-50/10` : 'border-slate-100'}`}>
-              <div className="flex flex-col">
-                <span className="text-sm font-semibold text-slate-800">{dish.name}</span>
-                <span className={`text-xs font-bold text-${themeColor}-600`}>
+            <motion.div 
+              key={dish.id}
+              layout
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className={`relative group p-3 rounded-2xl border transition-all duration-300 flex flex-col justify-between min-h-[100px] ${
+                qty > 0 
+                  ? (isSpecial ? 'bg-amber-50 border-amber-200 ring-2 ring-amber-500/20' : `bg-${themeColor}-50 border-${themeColor}-200 ring-2 ring-${themeColor}-500/20`) 
+                  : 'bg-white border-slate-100 hover:border-slate-200 shadow-sm'
+              }`}
+            >
+              <div className="flex flex-col mb-2">
+                <span className="text-xs font-bold text-slate-800 line-clamp-2 leading-tight mb-1">{dish.name}</span>
+                <span className={`text-sm font-black ${isSpecial ? 'text-amber-600' : `text-${themeColor}-600`}`}>
                   ${dish.price.toLocaleString()}
                 </span>
               </div>
-              <div className="flex items-center gap-2">
-                {qty > 0 && (
-                  <button 
-                    onClick={() => updateCalc(dish.id, -1)}
-                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 text-slate-500 active:scale-90"
-                  >
-                    <Minus className="w-4 h-4" />
-                  </button>
-                )}
-                {qty > 0 && <span className="w-4 text-center text-sm font-bold">{qty}</span>}
-                <button 
+              
+              <div className="flex items-center justify-between mt-auto">
+                <div className="flex items-center gap-1">
+                  <AnimatePresence>
+                    {qty > 0 && (
+                      <motion.button 
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -10 }}
+                        onClick={() => updateCalc(dish.id, -1)}
+                        className="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-500 shadow-sm active:scale-90"
+                      >
+                        <Minus className="w-3.5 h-3.5" />
+                      </motion.button>
+                    )}
+                  </AnimatePresence>
+                  
+                  <AnimatePresence>
+                    {qty > 0 && (
+                      <motion.span 
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="w-5 text-center text-xs font-black text-slate-700"
+                      >
+                        {qty}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                <motion.button 
+                  whileTap={{ scale: 0.9 }}
                   onClick={() => updateCalc(dish.id, 1)}
-                  className={`w-8 h-8 flex items-center justify-center rounded-lg text-white active:scale-90 bg-${themeColor}-600`}
+                  className={`w-9 h-9 flex items-center justify-center rounded-xl text-white shadow-md active:scale-95 ${
+                    isSpecial ? 'bg-amber-500 shadow-amber-200' : `bg-${themeColor}-600 shadow-${themeColor}-200`
+                  }`}
                 >
-                  <Plus className="w-4 h-4" />
-                </button>
+                  <Plus className="w-5 h-5" />
+                </motion.button>
               </div>
-            </div>
+
+              {qty > 0 && (
+                <div className={`absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black text-white shadow-lg ${isSpecial ? 'bg-amber-600' : `bg-${themeColor}-600`}`}>
+                  {qty}
+                </div>
+              )}
+            </motion.div>
           );
         })}
       </div>
 
-      {/* Floating Total Bar */}
-      {total > 0 && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 w-full max-w-md z-30 px-4 animate-in slide-in-from-bottom-4 duration-300 space-y-2">
-          {/* Change Calculator Card */}
-          <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-4 flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-slate-500">
-                <Banknote className="w-4 h-4" />
-                <span className="text-[10px] font-bold uppercase tracking-widest">Calculadora de Vueltas</span>
-              </div>
-              <div className="flex gap-1">
-                {[10000, 20000, 50000, 100000].map(val => (
-                  <button 
-                    key={val}
-                    onClick={() => setReceivedAmount(val.toString())}
-                    className={`text-[8px] font-bold px-2 py-1 rounded-md border transition-colors ${receivedAmount === val.toString() ? `bg-${themeColor}-600 border-${themeColor}-600 text-white` : 'bg-slate-50 border-slate-200 text-slate-500'}`}
+      {/* Floating Modern Checkout Panel */}
+      <AnimatePresence>
+        {total > 0 && (
+          <motion.div 
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="fixed bottom-24 left-1/2 -translate-x-1/2 w-full max-w-md z-30 px-4 space-y-3"
+          >
+            {/* Change Calculator Card - Refined */}
+            <div className="bg-white/95 backdrop-blur-xl rounded-[2.5rem] shadow-2xl border border-white p-5 flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className={`p-1.5 bg-${themeColor}-50 rounded-lg`}>
+                    <Banknote className={`w-4 h-4 text-${themeColor}-600`} />
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Calculadora de Vueltas</span>
+                </div>
+                <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
+                  <motion.button 
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setReceivedAmount(total.toString())}
+                    className={`text-[9px] font-black px-2.5 py-1.5 rounded-xl border transition-all ${
+                      receivedAmount === total.toString() 
+                        ? `bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-200` 
+                        : 'bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100'
+                    }`}
                   >
-                    ${(val/1000)}k
-                  </button>
-                ))}
+                    Exacto
+                  </motion.button>
+                  {[10000, 20000, 50000, 100000].map(val => (
+                    <motion.button 
+                      key={val}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => setReceivedAmount(val.toString())}
+                      className={`text-[9px] font-black px-2.5 py-1.5 rounded-xl border transition-all ${
+                        receivedAmount === val.toString() 
+                          ? `bg-${themeColor}-600 border-${themeColor}-600 text-white shadow-lg shadow-${themeColor}-200` 
+                          : 'bg-slate-50 border-slate-100 text-slate-500 hover:bg-slate-100'
+                      }`}
+                    >
+                      ${(val/1000)}k
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="relative">
+                  <label className="text-[9px] font-black text-slate-400 uppercase mb-2 block ml-1">Recibido</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">$</span>
+                    <input 
+                      type="number" 
+                      value={receivedAmount}
+                      onChange={(e) => setReceivedAmount(e.target.value)}
+                      placeholder="0"
+                      className="w-full bg-slate-100/50 border-2 border-transparent focus:border-indigo-500/20 focus:bg-white rounded-2xl p-3.5 pl-7 text-base font-black text-slate-800 outline-none transition-all"
+                    />
+                  </div>
+                </div>
+                <div className="bg-slate-50/50 rounded-2xl p-3.5 flex flex-col justify-center border border-slate-100">
+                  <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Vueltas</p>
+                  <p className={`text-xl font-black tracking-tight ${change < 0 ? 'text-red-500' : 'text-emerald-600'}`}>
+                    {change >= 0 ? `$${change.toLocaleString()}` : 'Falta dinero'}
+                  </p>
+                </div>
               </div>
             </div>
-            
-            <div className="flex gap-3 items-end">
-              <div className="flex-1">
-                <label className="text-[8px] font-bold text-slate-400 uppercase mb-1 block">Recibido</label>
-                <input 
-                  type="number" 
-                  value={receivedAmount}
-                  onChange={(e) => setReceivedAmount(e.target.value)}
-                  placeholder="Ej: 100000"
-                  className="w-full bg-slate-50 border-none rounded-xl p-3 text-sm font-bold focus:ring-2 focus:ring-slate-200 outline-none"
-                />
-              </div>
-              <div className="flex-1 text-right">
-                <p className="text-[8px] font-bold text-slate-400 uppercase mb-1">Vueltas</p>
-                <p className={`text-xl font-black ${change < 0 ? 'text-red-500' : 'text-emerald-600'}`}>
-                  ${change >= 0 ? change.toLocaleString() : 'Falta dinero'}
-                </p>
-              </div>
-            </div>
-          </div>
 
-          {/* Main Total Bar */}
-          <div className={`bg-${themeColor}-600 text-white p-4 rounded-2xl shadow-2xl flex items-center justify-between border border-white/20 backdrop-blur-md`}>
-            <div className="flex flex-col">
-              <span className="text-[10px] font-bold uppercase tracking-widest opacity-80">Total a Cobrar</span>
-              <span className="text-2xl font-black">${total.toLocaleString()}</span>
+            {/* Main Checkout Bar - Premium Look */}
+            <div className={`bg-${themeColor}-600 bg-gradient-to-r from-${themeColor}-600 to-${themeColor}-700 text-white p-5 rounded-[2.5rem] shadow-2xl flex items-center justify-between border border-white/20 relative overflow-hidden`}>
+              {/* Decorative Background Elements */}
+              <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
+              <div className="absolute -left-4 -bottom-4 w-24 h-24 bg-black/10 rounded-full blur-2xl"></div>
+              
+              <div className="flex items-center gap-4 relative z-10">
+                <div className="bg-white/20 p-2.5 rounded-2xl backdrop-blur-md">
+                  <ReceiptText className="w-6 h-6" />
+                </div>
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-70">Total a Cobrar</span>
+                    <span className="bg-white/20 px-2 py-0.5 rounded-full text-[9px] font-black">{totalItems} ítems</span>
+                  </div>
+                  <span className="text-3xl font-black tracking-tighter">${total.toLocaleString()}</span>
+                </div>
+              </div>
+              
+              <motion.button 
+                whileTap={{ scale: 0.9 }}
+                onClick={clearCalc}
+                className="bg-white/20 hover:bg-white/30 p-3 rounded-2xl transition-colors backdrop-blur-md border border-white/10 relative z-10"
+              >
+                <X className="w-6 h-6" />
+              </motion.button>
             </div>
-            <button 
-              onClick={clearCalc}
-              className="bg-white/20 hover:bg-white/30 p-2 rounded-full transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Empty State - Friendly */}
+      {filteredDishes.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-20 px-10 text-center">
+          <div className={`w-20 h-20 bg-${themeColor}-50 rounded-3xl flex items-center justify-center mb-6`}>
+            <ShoppingBag className={`w-10 h-10 text-${themeColor}-300`} />
           </div>
+          <h3 className="text-slate-800 font-black text-lg mb-2">¿Qué desea el cliente?</h3>
+          <p className="text-slate-400 text-sm leading-relaxed">
+            Selecciona los platos para calcular la cuenta rápidamente. No te preocupes, esto no afectará tus ventas del día.
+          </p>
         </div>
       )}
     </div>
