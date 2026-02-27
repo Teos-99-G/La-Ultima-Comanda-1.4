@@ -32,7 +32,8 @@ const SalesView: React.FC<SalesViewProps> = ({ menus, dishes, sales, updateSale,
   );
 
   const totalValue = dishes.reduce((acc, dish) => {
-    return acc + (dish.price * (sales[dish.id] || 0));
+    const qty = sales[dish.id] || 0;
+    return acc + (dish.price * qty);
   }, 0);
 
   return (
