@@ -86,7 +86,7 @@ const AdminView: React.FC<AdminViewProps> = ({ menus, setMenus, dishes, setDishe
           >
             <Download className="w-4 h-4" /> Guardar
           </button>
-         <button 
+          <button 
             onClick={onRequestLoad}
             className="flex items-center justify-center gap-2 bg-slate-600 text-white py-4 rounded-xl text-xs font-bold cursor-pointer active:bg-slate-500 shadow-md"
           >
