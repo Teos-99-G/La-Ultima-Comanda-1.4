@@ -22,7 +22,7 @@ const AdminView: React.FC<AdminViewProps> = ({ menus, setMenus, dishes, setDishe
   const [expandedMenuId, setExpandedMenuId] = useState<string | null>(null);
   const [editingDishId, setEditingDishId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
-  const [newDish, setNewDish] = useState({ name: '', price: '' });
+  const [newDish, setNewDish] = useState({ name: '', price: '', description: '' });
 
   const addMenu = () => {
     if (!newMenuName.trim()) return;
@@ -55,10 +55,11 @@ const AdminView: React.FC<AdminViewProps> = ({ menus, setMenus, dishes, setDishe
       id: generateId(),
       menuId,
       name: newDish.name,
-      price: parseFloat(newDish.price)
+      price: parseFloat(newDish.price),
+      description: newDish.description
     };
     setDishes(prev => [...prev, dish]);
-    setNewDish({ name: '', price: '' });
+    setNewDish({ name: '', price: '', description: '' });
   };
 
   const deleteDish = (id: string) => {
@@ -197,31 +198,49 @@ const AdminView: React.FC<AdminViewProps> = ({ menus, setMenus, dishes, setDishe
               <div className="p-4 space-y-4 bg-white">
                 <div className={`${menu.isSpecial ? 'bg-amber-50 border-amber-100' : `bg-${themeColor}-50 border-${themeColor}-100`} p-4 rounded-xl border`}>
                   <p className={`text-[10px] font-bold uppercase tracking-widest mb-3 ${menu.isSpecial ? 'text-amber-400' : `text-${themeColor}-400`}`}>Nuevo Plato</p>
-                  <div className="grid grid-cols-4 gap-2">
+                  <div className="grid grid-cols-4 gap-2 mb-2">
                     <input type="text" placeholder="Nombre" className="col-span-2 p-3 text-sm rounded-lg border border-white" value={newDish.name} onChange={(e) => setNewDish({ ...newDish, name: e.target.value })} />
                     <input type="number" placeholder="$" className="col-span-1 p-3 text-sm rounded-lg border border-white font-bold" value={newDish.price} onChange={(e) => setNewDish({ ...newDish, price: e.target.value })} />
                     <button onClick={() => addDish(menu.id)} className={`col-span-1 text-white flex items-center justify-center rounded-xl active:scale-95 shadow-md ${menu.isSpecial ? 'bg-amber-500' : 'bg-emerald-500'}`}><Plus className="w-6 h-6" /></button>
                   </div>
+                  <textarea 
+                    placeholder="Descripción (opcional)" 
+                    className="w-full p-3 text-sm rounded-lg border border-white resize-none h-20" 
+                    value={newDish.description} 
+                    onChange={(e) => setNewDish({ ...newDish, description: e.target.value })}
+                  />
                 </div>
 
                 <ul className="divide-y divide-slate-100">
                   {dishes.filter(d => d.menuId === menu.id).map(dish => (
                     <li key={dish.id} className="py-4 flex items-center justify-between">
                       {editingDishId === dish.id ? (
-                        <div className="flex gap-2 flex-1 items-center">
-                          <input className={`flex-1 p-2 text-sm border rounded-lg outline-none ${menu.isSpecial ? 'border-amber-500' : `border-${themeColor}-500`}`} defaultValue={dish.name} id={`edit-name-${dish.id}`} />
-                          <input className={`w-20 p-2 text-sm border rounded-lg outline-none font-bold ${menu.isSpecial ? 'border-amber-500' : `border-${themeColor}-500`}`} type="number" defaultValue={dish.price} id={`edit-price-${dish.id}`} />
-                          <button onClick={() => {
-                              const name = (document.getElementById(`edit-name-${dish.id}`) as HTMLInputElement).value;
-                              const price = parseFloat((document.getElementById(`edit-price-${dish.id}`) as HTMLInputElement).value);
-                              updateDish(dish.id, { name, price });
-                          }} className={`p-3 text-white rounded-xl ${menu.isSpecial ? 'bg-amber-500' : 'bg-emerald-500'}`}><Check className="w-5 h-5" /></button>
+                        <div className="flex flex-col gap-2 flex-1">
+                          <div className="flex gap-2 items-center">
+                            <input className={`flex-1 p-2 text-sm border rounded-lg outline-none ${menu.isSpecial ? 'border-amber-500' : `border-${themeColor}-500`}`} defaultValue={dish.name} id={`edit-name-${dish.id}`} />
+                            <input className={`w-20 p-2 text-sm border rounded-lg outline-none font-bold ${menu.isSpecial ? 'border-amber-500' : `border-${themeColor}-500`}`} type="number" defaultValue={dish.price} id={`edit-price-${dish.id}`} />
+                            <button onClick={() => {
+                                const name = (document.getElementById(`edit-name-${dish.id}`) as HTMLInputElement).value;
+                                const price = parseFloat((document.getElementById(`edit-price-${dish.id}`) as HTMLInputElement).value);
+                                const description = (document.getElementById(`edit-desc-${dish.id}`) as HTMLTextAreaElement).value;
+                                updateDish(dish.id, { name, price, description });
+                            }} className={`p-3 text-white rounded-xl ${menu.isSpecial ? 'bg-amber-500' : 'bg-emerald-500'}`}><Check className="w-5 h-5" /></button>
+                          </div>
+                          <textarea 
+                            id={`edit-desc-${dish.id}`}
+                            className={`w-full p-2 text-sm border rounded-lg outline-none resize-none h-20 ${menu.isSpecial ? 'border-amber-500' : `border-${themeColor}-500`}`} 
+                            defaultValue={dish.description || ''} 
+                            placeholder="Descripción"
+                          />
                         </div>
                       ) : (
                         <>
-                          <div className="flex flex-col">
+                          <div className="flex flex-col flex-1">
                             <span className="text-sm font-semibold text-slate-800">{dish.name}</span>
                             <span className={`text-xs font-bold tracking-tight ${menu.isSpecial ? 'text-amber-600' : `text-${themeColor}-600`}`}>${dish.price.toLocaleString()}</span>
+                            {dish.description && (
+                              <p className="text-[10px] text-slate-400 mt-1 italic line-clamp-1">{dish.description}</p>
+                            )}
                           </div>
                           <div className="flex items-center gap-1">
                             <button onClick={() => setEditingDishId(dish.id)} className={`p-3 text-slate-300 active:text-${themeColor}-600 active:bg-${themeColor}-50 rounded-xl`}><Edit2 className="w-4 h-4" /></button>
