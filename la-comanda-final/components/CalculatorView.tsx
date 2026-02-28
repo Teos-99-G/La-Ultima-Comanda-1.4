@@ -300,8 +300,8 @@ const CalculatorView: React.FC<CalculatorViewProps> = ({ menus, dishes, themeCol
 
       {/* Empty State - Friendly */}
       {filteredDishes.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-10 px-10 text-center mt-4">
-          <div className={`w-20 h-20 bg-${themeColor}-50 rounded-3xl flex items-center justify-center mb-6`}>
+       <div className="text-center py-16 px-6">
+            <div className={`w-16 h-16 bg-${themeColor}-50 text-${themeColor}-300 rounded-full flex items-center justify-center mx-auto mb-4`}>
             <ShoppingBag className={`w-10 h-10 text-${themeColor}-300`} />
           </div>
           <h3 className="text-slate-800 font-black text-lg mb-2">¿Qué desea el cliente?</h3>
