@@ -71,7 +71,7 @@ const CalculatorView: React.FC<CalculatorViewProps> = ({ menus, dishes, themeCol
               layout
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className={`relative group p-1.5 rounded-xl border transition-all duration-300 flex flex-col justify-between min-h-[65px] ${
+              className={`relative group p-2 rounded-xl border transition-all duration-300 flex flex-col justify-between min-h-[75px] ${
                 qty > 0 
                   ? (isSpecial ? 'bg-amber-50 border-amber-200 ring-2 ring-amber-500/20' : `bg-${themeColor}-50 border-${themeColor}-200 ring-2 ring-${themeColor}-500/20`) 
                   : 'bg-white border-slate-100 hover:border-slate-200 shadow-sm'
@@ -79,7 +79,7 @@ const CalculatorView: React.FC<CalculatorViewProps> = ({ menus, dishes, themeCol
             >
               <div className="flex flex-col mb-1">
                 <div className="flex justify-between items-start gap-1">
-                  <span className="text-[12px] font-bold text-slate-800 leading-tight mb-0.5 flex-1">{dish.name}</span>
+                  <span className="text-[13px] font-bold text-slate-800 leading-tight mb-0.5 flex-1">{dish.name}</span>
                   {dish.description && (
                     <button 
                       onClick={(e) => {
