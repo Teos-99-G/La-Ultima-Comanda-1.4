@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { Calculator, Plus, Minus, Search, Trash2, X, Banknote, ShoppingBag, ReceiptText } from 'lucide-react';
+import { Calculator, Plus, Minus, Search, Trash2, X, Banknote, ShoppingBag, ReceiptText, Info } from 'lucide-react';
 import { Menu, Dish, ThemeColor } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -15,6 +15,11 @@ const CalculatorView: React.FC<CalculatorViewProps> = ({ menus, dishes, themeCol
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<string>(menus[0]?.id || '');
   const [receivedAmount, setReceivedAmount] = useState<string>('');
+  const [showDescription, setShowDescription] = useState<Record<string, boolean>>({});
+
+  const toggleDescription = (dishId: string) => {
+    setShowDescription(prev => ({ ...prev, [dishId]: !prev[dishId] }));
+  };
 
   const updateCalc = (dishId: string, delta: number) => {
     setCalcItems(prev => {
@@ -107,6 +112,7 @@ const CalculatorView: React.FC<CalculatorViewProps> = ({ menus, dishes, themeCol
           const qty = calcItems[dish.id] || 0;
           const menu = menus.find(m => m.id === dish.menuId);
           const isSpecial = menu?.isSpecial;
+          const isDescVisible = showDescription[dish.id];
 
           return (
             <motion.div 
@@ -121,10 +127,36 @@ const CalculatorView: React.FC<CalculatorViewProps> = ({ menus, dishes, themeCol
               }`}
             >
               <div className="flex flex-col mb-1">
-                <span className="text-[11px] font-bold text-slate-800 line-clamp-2 leading-tight mb-0.5">{dish.name}</span>
+                <div className="flex justify-between items-start gap-1">
+                  <span className="text-[11px] font-bold text-slate-800 line-clamp-2 leading-tight mb-0.5 flex-1">{dish.name}</span>
+                  {dish.description && (
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleDescription(dish.id);
+                      }}
+                      className={`p-1 rounded-full transition-colors ${isDescVisible ? (isSpecial ? 'bg-amber-100 text-amber-600' : `bg-${themeColor}-100 text-${themeColor}-600`) : 'text-slate-300 hover:text-slate-400'}`}
+                    >
+                      <Info className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
                 <span className={`text-xs font-black ${isSpecial ? 'text-amber-600' : `text-${themeColor}-600`}`}>
                   ${dish.price.toLocaleString()}
                 </span>
+                
+                <AnimatePresence>
+                  {isDescVisible && dish.description && (
+                    <motion.p 
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="text-[9px] text-slate-500 mt-1 leading-tight italic overflow-hidden"
+                    >
+                      {dish.description}
+                    </motion.p>
+                  )}
+                </AnimatePresence>
               </div>
               
               <div className="flex items-center justify-between mt-auto">
@@ -194,7 +226,7 @@ const CalculatorView: React.FC<CalculatorViewProps> = ({ menus, dishes, themeCol
                   <div className={`p-1.5 bg-${themeColor}-50 rounded-lg`}>
                     <Banknote className={`w-4 h-4 text-${themeColor}-600`} />
                   </div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">PARA VUELTAS</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">SABER VUELTAS</span>
                 </div>
                 <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
                   <motion.button 
