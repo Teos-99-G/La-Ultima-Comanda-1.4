@@ -194,7 +194,7 @@ const CalculatorView: React.FC<CalculatorViewProps> = ({ menus, dishes, themeCol
                   <div className={`p-1.5 bg-${themeColor}-50 rounded-lg`}>
                     <Banknote className={`w-4 h-4 text-${themeColor}-600`} />
                   </div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Calculadora de Vueltas</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">PARA VUELTAS</span>
                 </div>
                 <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
                   <motion.button 
