@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Download, ShoppingBag, DollarSign, Trash2, X, Check, Award } from 'lucide-react';
 import { Menu, Dish, ThemeColor } from '../types';
 import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import 'jspdf-autotable';
 
 interface ReportViewProps {
   appName: string;
@@ -137,7 +137,7 @@ const ReportView: React.FC<ReportViewProps> = ({ appName, menus, dishes, sales, 
       }
     });
 
-    autoTable(doc, {
+    (doc as any).autoTable({
       startY: 70,
       head: [['Plato', 'Precio Unit.', 'Cant.', 'Subtotal']],
       body: tableRows,
@@ -151,8 +151,9 @@ const ReportView: React.FC<ReportViewProps> = ({ appName, menus, dishes, sales, 
       footStyles: { fillColor: [31, 41, 55], textColor: [255, 255, 255], fontStyle: 'bold' }
     });
 
-    const safeAppName = appName.toLowerCase().replace(/[^a-z0-9]/g, '-');
-    doc.save(`reporte-${safeAppName}-${dateStr.replace(/[\/\s:,]/g, '-')}.pdf`);
+       const safeAppName = appName.toLowerCase().replace(/[^a-z0-9]/g, '-') || 'reporte';
+    const dateFileName = new Date().toISOString().split('T')[0];
+    doc.save(`reporte-${safeAppName}-${dateFileName}.pdf`);
   };
 
   return (
@@ -173,8 +174,7 @@ const ReportView: React.FC<ReportViewProps> = ({ appName, menus, dishes, sales, 
       <div className="space-y-3">
         <button 
           onClick={() => exportPDF()}
-          className={`w-full flex items-center justify-center gap-2 bg-${themeColor}-600 text-white p-4 rounded-xl font-bold shadow-md active:scale-95 transition-transform disabled:opacity-50`}
-          disabled={totalUnitsAll === 0}
+         className={`w-full flex items-center justify-center gap-2 bg-${themeColor}-600 text-white p-4 rounded-xl font-bold shadow-md active:scale-95 transition-transform`}
         >
           <Download className="w-5 h-5" /> Exportar Reporte PDF
         </button>
