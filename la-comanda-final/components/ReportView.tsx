@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { Download, ShoppingBag, DollarSign, Trash2, X, Check, Award } from 'lucide-react';
 import { Menu, Dish, ThemeColor } from '../types';
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 interface ReportViewProps {
   appName: string;
@@ -12,11 +11,9 @@ interface ReportViewProps {
   sales: Record<string, number>;
   onResetSales: () => void;
   themeColor: ThemeColor;
-  hasStoragePermission: boolean;
-  onRequestPermission: () => void;
 }
 
-const ReportView: React.FC<ReportViewProps> = ({ appName, menus, dishes, sales, onResetSales, themeColor, hasStoragePermission, onRequestPermission }) => {
+const ReportView: React.FC<ReportViewProps> = ({ appName, menus, dishes, sales, onResetSales, themeColor }) => {
   const [isConfirmingReset, setIsConfirmingReset] = useState(false);
 
   const getGrandTotal = () => {
@@ -58,102 +55,103 @@ const ReportView: React.FC<ReportViewProps> = ({ appName, menus, dishes, sales, 
     .slice(0, 3);
 
   const exportPDF = () => {
-    if (!hasStoragePermission) {
-      onRequestPermission();
-      return;
+    try {
+      const doc = new jsPDF();
+      const dateStr = new Date().toLocaleString();
+      const totalQty = totalUnitsAll;
+      const totalMoney = getGrandTotal();
+
+      // Theme colors for PDF
+      const themeRGB: Record<ThemeColor, [number, number, number]> = {
+        indigo: [79, 70, 229],
+        emerald: [16, 185, 129],
+        rose: [225, 29, 72],
+        amber: [245, 158, 11],
+        slate: [71, 85, 105],
+        violet: [139, 92, 246],
+        cyan: [6, 182, 212]
+      };
+      const primaryRGB = themeRGB[themeColor] || [79, 70, 229];
+
+      doc.setFontSize(20);
+      doc.setTextColor(primaryRGB[0], primaryRGB[1], primaryRGB[2]);
+      doc.text('INFORME DE VENTAS', 14, 22);
+      doc.setTextColor(31, 41, 55);
+      doc.text(appName.toUpperCase() || 'MI NEGOCIO', 14, 30);
+      
+      doc.setFontSize(10);
+      doc.setTextColor(100, 116, 139);
+      doc.text(`Fecha: ${dateStr}`, 14, 40);
+      doc.text(`Unidades Totales: ${totalQty}`, 14, 46);
+      doc.text(`Venta Total: $${totalMoney.toLocaleString()}`, 14, 52);
+      doc.text(`Total Almuerzos: ${totalUnitsRegular}`, 14, 58);
+      doc.text(`Venta Almuerzos: $${totalMoneyRegular.toLocaleString()}`, 14, 64);
+
+      const tableRows: any[] = [];
+      menus.forEach(menu => {
+        const menuDishes = dishes.filter(d => d.menuId === menu.id && (sales[d.id] || 0) > 0);
+        if (menuDishes.length > 0) {
+          const isSpecial = menu.isSpecial;
+          tableRows.push([{ 
+            content: menu.name.toUpperCase(), 
+            colSpan: 4, 
+            styles: { 
+              fillColor: isSpecial ? [254, 243, 199] : [241, 245, 249], 
+              fontStyle: 'bold', 
+              textColor: isSpecial ? [146, 64, 14] : [51, 65, 85] 
+            } 
+          }]);
+          
+          let menuSubtotalMoney = 0;
+          let menuSubtotalQty = 0;
+
+          menuDishes.forEach(dish => {
+            const qty = sales[dish.id] || 0;
+            const sub = dish.price * qty;
+            menuSubtotalMoney += sub;
+            menuSubtotalQty += qty;
+            tableRows.push([
+              dish.name, 
+              `$${dish.price.toLocaleString()}`, 
+              qty, 
+              `$${sub.toLocaleString()}`
+            ]);
+          });
+
+          tableRows.push([{ 
+            content: `Subtotal ${menu.name}: ${menuSubtotalQty} uds. | $${menuSubtotalMoney.toLocaleString()}`, 
+            colSpan: 4, 
+            styles: { 
+              halign: 'right', 
+              fontStyle: 'bold', 
+              textColor: isSpecial ? [146, 64, 14] : primaryRGB, 
+              fillColor: isSpecial ? [255, 251, 235] : [248, 250, 252] 
+            } 
+          }]);
+        }
+      });
+
+      autoTable(doc, {
+        startY: 70,
+        head: [['Plato', 'Precio Unit.', 'Cant.', 'Subtotal']],
+        body: tableRows,
+        foot: [
+          ['', '', 'CANTIDAD TOTAL:', totalQty.toString()],
+          ['', '', 'VALOR TOTAL:', `$${totalMoney.toLocaleString()}`]
+        ],
+        showFoot: 'lastPage',
+        theme: 'striped',
+        headStyles: { fillColor: primaryRGB },
+        footStyles: { fillColor: [31, 41, 55], textColor: [255, 255, 255], fontStyle: 'bold' }
+      });
+
+      const safeAppName = appName.toLowerCase().replace(/[^a-z0-9]/g, '-') || 'reporte';
+      const dateFileName = new Date().toISOString().split('T')[0];
+      doc.save(`reporte-${safeAppName}-${dateFileName}.pdf`);
+    } catch (error) {
+      console.error('Error al exportar PDF:', error);
+      alert('Hubo un error al generar el PDF. Por favor, intenta de nuevo.');
     }
-    const doc = new jsPDF();
-    const dateStr = new Date().toLocaleString();
-    const totalQty = totalUnitsAll;
-    const totalMoney = getGrandTotal();
-
-    // Theme colors for PDF
-    const themeRGB: Record<ThemeColor, [number, number, number]> = {
-      indigo: [79, 70, 229],
-      emerald: [16, 185, 129],
-      rose: [225, 29, 72],
-      amber: [245, 158, 11],
-      slate: [71, 85, 105],
-      violet: [139, 92, 246],
-      cyan: [6, 182, 212]
-    };
-    const primaryRGB = themeRGB[themeColor] || [79, 70, 229];
-
-    doc.setFontSize(20);
-    doc.setTextColor(primaryRGB[0], primaryRGB[1], primaryRGB[2]);
-    doc.text('INFORME DE VENTAS', 14, 22);
-    doc.setTextColor(31, 41, 55);
-    doc.text(appName.toUpperCase(), 14, 30);
-    
-    doc.setFontSize(10);
-    doc.setTextColor(100, 116, 139);
-    doc.text(`Fecha: ${dateStr}`, 14, 40);
-    doc.text(`Unidades Totales: ${totalQty}`, 14, 46);
-    doc.text(`Venta Total: $${totalMoney.toLocaleString()}`, 14, 52);
-    doc.text(`Total Almuerzos: ${totalUnitsRegular}`, 14, 58);
-    doc.text(`Venta Almuerzos: $${totalMoneyRegular.toLocaleString()}`, 14, 64);
-
-    const tableRows: any[] = [];
-    menus.forEach(menu => {
-      const menuDishes = dishes.filter(d => d.menuId === menu.id && (sales[d.id] || 0) > 0);
-      if (menuDishes.length > 0) {
-        const isSpecial = menu.isSpecial;
-        tableRows.push([{ 
-          content: menu.name.toUpperCase(), 
-          colSpan: 4, 
-          styles: { 
-            fillColor: isSpecial ? [254, 243, 199] : [241, 245, 249], 
-            fontStyle: 'bold', 
-            textColor: isSpecial ? [146, 64, 14] : [51, 65, 85] 
-          } 
-        }]);
-        
-        let menuSubtotalMoney = 0;
-        let menuSubtotalQty = 0;
-
-        menuDishes.forEach(dish => {
-          const qty = sales[dish.id] || 0;
-          const sub = dish.price * qty;
-          menuSubtotalMoney += sub;
-          menuSubtotalQty += qty;
-          tableRows.push([
-            dish.name, 
-            `$${dish.price.toLocaleString()}`, 
-            qty, 
-            `$${sub.toLocaleString()}`
-          ]);
-        });
-
-        tableRows.push([{ 
-          content: `Subtotal ${menu.name}: ${menuSubtotalQty} uds. | $${menuSubtotalMoney.toLocaleString()}`, 
-          colSpan: 4, 
-          styles: { 
-            halign: 'right', 
-            fontStyle: 'bold', 
-            textColor: isSpecial ? [146, 64, 14] : primaryRGB, 
-            fillColor: isSpecial ? [255, 251, 235] : [248, 250, 252] 
-          } 
-        }]);
-      }
-    });
-
-    (doc as any).autoTable({
-      startY: 70,
-      head: [['Plato', 'Precio Unit.', 'Cant.', 'Subtotal']],
-      body: tableRows,
-      foot: [
-        ['', '', 'CANTIDAD TOTAL:', totalQty.toString()],
-        ['', '', 'VALOR TOTAL:', `$${totalMoney.toLocaleString()}`]
-      ],
-      showFoot: 'lastPage',
-      theme: 'striped',
-      headStyles: { fillColor: primaryRGB },
-      footStyles: { fillColor: [31, 41, 55], textColor: [255, 255, 255], fontStyle: 'bold' }
-    });
-
-       const safeAppName = appName.toLowerCase().replace(/[^a-z0-9]/g, '-') || 'reporte';
-    const dateFileName = new Date().toISOString().split('T')[0];
-    doc.save(`reporte-${safeAppName}-${dateFileName}.pdf`);
   };
 
   return (
@@ -174,7 +172,7 @@ const ReportView: React.FC<ReportViewProps> = ({ appName, menus, dishes, sales, 
       <div className="space-y-3">
         <button 
           onClick={() => exportPDF()}
-         className={`w-full flex items-center justify-center gap-2 bg-${themeColor}-600 text-white p-4 rounded-xl font-bold shadow-md active:scale-95 transition-transform`}
+          className={`w-full flex items-center justify-center gap-2 bg-${themeColor}-600 text-white p-4 rounded-xl font-bold shadow-md active:scale-95 transition-transform`}
         >
           <Download className="w-5 h-5" /> Exportar Reporte PDF
         </button>
