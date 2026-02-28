@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Minus, Search, ShoppingCart } from 'lucide-react';
+import { Plus, Minus, Search, ShoppingCart, Info } from 'lucide-react';
 import { Menu, Dish, ThemeColor } from '../types';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface SalesViewProps {
   menus: Menu[];
@@ -14,6 +15,11 @@ interface SalesViewProps {
 const SalesView: React.FC<SalesViewProps> = ({ menus, dishes, sales, updateSale, themeColor }) => {
   const [activeTab, setActiveTab] = useState<string>(menus[0]?.id || '');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showDescription, setShowDescription] = useState<Record<string, boolean>>({});
+
+  const toggleDescription = (dishId: string) => {
+    setShowDescription(prev => ({ ...prev, [dishId]: !prev[dishId] }));
+  };
 
   // Sincronizar la pestaña activa cuando los menús cambian (importación)
   useEffect(() => {
@@ -89,31 +95,59 @@ const SalesView: React.FC<SalesViewProps> = ({ menus, dishes, sales, updateSale,
           const qty = sales[dish.id] || 0;
           const menu = menus.find(m => m.id === dish.menuId);
           const isSpecial = menu?.isSpecial;
+          const isDescVisible = showDescription[dish.id];
 
           return (
-            <div key={dish.id} className={`bg-white p-3 rounded-xl border shadow-sm flex items-center justify-between ${isSpecial ? 'border-amber-200 bg-amber-50/30' : 'border-slate-100'}`}>
-              <div className="flex flex-col">
-                <span className="font-semibold text-slate-800">{dish.name}</span>
-                <span className={`text-sm font-medium ${isSpecial ? 'text-amber-600' : `text-${themeColor}-600`}`}>${dish.price.toLocaleString()}</span>
+            <div key={dish.id} className={`bg-white p-3 rounded-xl border shadow-sm flex flex-col gap-2 ${isSpecial ? 'border-amber-200 bg-amber-50/30' : 'border-slate-100'}`}>
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-slate-800">{dish.name}</span>
+                    {dish.description && (
+                      <button 
+                        onClick={() => toggleDescription(dish.id)}
+                        className={`p-1 rounded-full transition-colors ${isDescVisible ? (isSpecial ? 'bg-amber-100 text-amber-600' : `bg-${themeColor}-100 text-${themeColor}-600`) : 'text-slate-300 hover:text-slate-400'}`}
+                      >
+                        <Info className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                  <span className={`text-sm font-medium ${isSpecial ? 'text-amber-600' : `text-${themeColor}-600`}`}>${dish.price.toLocaleString()}</span>
+                </div>
+                <div className={`flex items-center gap-3 p-1 rounded-lg ${isSpecial ? 'bg-amber-100/50' : 'bg-slate-50'}`}>
+                  <button 
+                    onClick={() => updateSale(dish.id, -1)}
+                    className={`p-1.5 rounded-md transition-colors ${qty > 0 ? 'bg-white shadow-sm ' + (isSpecial ? 'text-amber-600' : `text-${themeColor}-600`) : 'text-slate-300 cursor-not-allowed'}`}
+                    disabled={qty === 0}
+                  >
+                    <Minus className="w-5 h-5" />
+                  </button>
+                  <span className={`w-8 text-center font-bold ${qty > 0 ? (isSpecial ? 'text-amber-700' : `text-${themeColor}-700`) : 'text-slate-400'}`}>
+                    {qty}
+                  </span>
+                  <button 
+                    onClick={() => updateSale(dish.id, 1)}
+                    className={`p-1.5 text-white rounded-md shadow-sm active:scale-95 transition-transform ${isSpecial ? 'bg-amber-500' : `bg-${themeColor}-600`}`}
+                  >
+                    <Plus className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
-              <div className={`flex items-center gap-3 p-1 rounded-lg ${isSpecial ? 'bg-amber-100/50' : 'bg-slate-50'}`}>
-                <button 
-                  onClick={() => updateSale(dish.id, -1)}
-                  className={`p-1.5 rounded-md transition-colors ${qty > 0 ? 'bg-white shadow-sm ' + (isSpecial ? 'text-amber-600' : `text-${themeColor}-600`) : 'text-slate-300 cursor-not-allowed'}`}
-                  disabled={qty === 0}
-                >
-                  <Minus className="w-5 h-5" />
-                </button>
-                <span className={`w-8 text-center font-bold ${qty > 0 ? (isSpecial ? 'text-amber-700' : `text-${themeColor}-700`) : 'text-slate-400'}`}>
-                  {qty}
-                </span>
-                <button 
-                  onClick={() => updateSale(dish.id, 1)}
-                  className={`p-1.5 text-white rounded-md shadow-sm active:scale-95 transition-transform ${isSpecial ? 'bg-amber-500' : `bg-${themeColor}-600`}`}
-                >
-                  <Plus className="w-5 h-5" />
-                </button>
-              </div>
+
+              <AnimatePresence>
+                {isDescVisible && dish.description && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <p className="text-xs text-slate-500 italic border-t border-slate-100 pt-2 leading-relaxed">
+                      {dish.description}
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           );
         })}
