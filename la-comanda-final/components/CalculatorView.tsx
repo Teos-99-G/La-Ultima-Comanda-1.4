@@ -15,6 +15,7 @@ const CalculatorView: React.FC<CalculatorViewProps> = ({ menus, dishes, themeCol
   const [activeTab, setActiveTab] = useState<string>(menus[0]?.id || '');
   const [receivedAmount, setReceivedAmount] = useState<string>('');
   const [showDescription, setShowDescription] = useState<Record<string, boolean>>({});
+  const [showSelectedList, setShowSelectedList] = useState(false);
 
   const toggleDescription = (dishId: string) => {
     setShowDescription(prev => ({ ...prev, [dishId]: !prev[dishId] }));
@@ -93,7 +94,7 @@ const CalculatorView: React.FC<CalculatorViewProps> = ({ menus, dishes, themeCol
         </div>
 
       {/* Dish Selection Grid - 2 Columns for better POS feel */}
-      <div className="grid grid-cols-2 gap-3 pb-32 mt-2">
+      <div className="grid grid-cols-2 gap-3 pb-80 mt-2">
         {filteredDishes.map(dish => {
           const qty = calcItems[dish.id] || 0;
           const menu = menus.find(m => m.id === dish.menuId);
@@ -204,9 +205,59 @@ const CalculatorView: React.FC<CalculatorViewProps> = ({ menus, dishes, themeCol
             exit={{ y: 100, opacity: 0 }}
             className="fixed bottom-24 left-0 right-0 z-50 px-4 pointer-events-none flex justify-center"
           >
-            <div className="w-full max-w-md pointer-events-auto space-y-3">
+            <div className="w-full max-w-md pointer-events-auto space-y-2">
+              {/* Selected Items Summary Toggle */}
+              <motion.button
+                onClick={() => setShowSelectedList(!showSelectedList)}
+                className="w-full bg-white/90 backdrop-blur-md border border-slate-200 py-2 px-4 rounded-2xl shadow-lg flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-slate-600"
+              >
+                <div className="flex items-center gap-2">
+                  <ShoppingBag className={`w-3.5 h-3.5 text-${themeColor}-600`} />
+                  <span>{showSelectedList ? 'Ocultar Detalle' : 'Ver Detalle del Pedido'}</span>
+                </div>
+                <span className={`bg-${themeColor}-100 text-${themeColor}-700 px-2 py-0.5 rounded-full`}>
+                  {totalItems} ítems
+                </span>
+              </motion.button>
+
+              {/* Selected Items List - Expandable */}
+              <AnimatePresence>
+                {showSelectedList && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="bg-white/95 backdrop-blur-xl rounded-3xl border border-slate-200 shadow-xl overflow-hidden mb-2"
+                  >
+                    <div className="max-h-40 overflow-y-auto p-3 space-y-2 no-scrollbar">
+                      {Object.entries(calcItems).map(([dishId, qty]) => {
+                        const dish = dishes.find(d => d.id === dishId);
+                        if (!dish) return null;
+                        return (
+                          <div key={dishId} className="flex items-center justify-between py-1 border-b border-slate-50 last:border-0">
+                            <div className="flex flex-col">
+                              <span className="text-[10px] font-bold text-slate-700">{dish.name}</span>
+                              <span className="text-[9px] text-slate-400">${dish.price.toLocaleString()} x {qty}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-black text-slate-800">${(dish.price * (qty as number)).toLocaleString()}</span>
+                              <button 
+                                onClick={() => updateCalc(dishId, -1)}
+                                className="p-1 bg-red-50 text-red-500 rounded-md"
+                              >
+                                <Minus className="w-3 h-3" />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               {/* Change Calculator Card - Refined */}
-              <div className="bg-white/95 backdrop-blur-xl rounded-[2.5rem] shadow-2xl border border-slate-200 p-5 flex flex-col gap-4">
+              <div className="bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-2xl border border-slate-200 p-4 flex flex-col gap-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div className={`p-1.5 bg-${themeColor}-50 rounded-lg`}>
@@ -243,9 +294,9 @@ const CalculatorView: React.FC<CalculatorViewProps> = ({ menus, dishes, themeCol
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <div className="relative">
-                  <label className="text-[9px] font-black text-slate-400 uppercase mb-2 block ml-1">Recibido</label>
+                  <label className="text-[9px] font-black text-slate-400 uppercase mb-1.5 block ml-1">Recibido</label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">$</span>
                     <input 
@@ -253,13 +304,13 @@ const CalculatorView: React.FC<CalculatorViewProps> = ({ menus, dishes, themeCol
                       value={receivedAmount}
                       onChange={(e) => setReceivedAmount(e.target.value)}
                       placeholder="0"
-                      className="w-full bg-slate-100/50 border-2 border-transparent focus:border-indigo-500/20 focus:bg-white rounded-2xl p-3.5 pl-7 text-base font-black text-slate-800 outline-none transition-all"
+                      className="w-full bg-slate-100/50 border-2 border-transparent focus:border-indigo-500/20 focus:bg-white rounded-xl p-2.5 pl-7 text-sm font-black text-slate-800 outline-none transition-all"
                     />
                   </div>
                 </div>
-                <div className="bg-slate-50/50 rounded-2xl p-3.5 flex flex-col justify-center border border-slate-100">
-                  <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Vueltas</p>
-                  <p className={`text-xl font-black tracking-tight ${change < 0 ? 'text-red-500' : 'text-emerald-600'}`}>
+                <div className="bg-slate-50/50 rounded-xl p-2.5 flex flex-col justify-center border border-slate-100">
+                  <p className="text-[9px] font-black text-slate-400 uppercase mb-0.5">Vueltas</p>
+                  <p className={`text-lg font-black tracking-tight ${change < 0 ? 'text-red-500' : 'text-emerald-600'}`}>
                     {change >= 0 ? `$${change.toLocaleString()}` : 'Falta dinero'}
                   </p>
                 </div>
@@ -267,30 +318,29 @@ const CalculatorView: React.FC<CalculatorViewProps> = ({ menus, dishes, themeCol
             </div>
 
             {/* Main Checkout Bar - Premium Look */}
-            <div className={`bg-${themeColor}-600 bg-gradient-to-r from-${themeColor}-600 to-${themeColor}-700 text-white p-5 rounded-[2.5rem] shadow-2xl flex items-center justify-between border border-white/20 relative overflow-hidden`}>
+            <div className={`bg-${themeColor}-600 bg-gradient-to-r from-${themeColor}-600 to-${themeColor}-700 text-white p-4 rounded-[2rem] shadow-2xl flex items-center justify-between border border-white/20 relative overflow-hidden`}>
               {/* Decorative Background Elements */}
               <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
               <div className="absolute -left-4 -bottom-4 w-24 h-24 bg-black/10 rounded-full blur-2xl"></div>
               
-              <div className="flex items-center gap-4 relative z-10">
-                <div className="bg-white/20 p-2.5 rounded-2xl backdrop-blur-md">
-                  <ReceiptText className="w-6 h-6" />
+              <div className="flex items-center gap-3 relative z-10">
+                <div className="bg-white/20 p-2 rounded-xl backdrop-blur-md">
+                  <ReceiptText className="w-5 h-5" />
                 </div>
                 <div className="flex flex-col">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-70">Total a Cobrar</span>
-                    <span className="bg-white/20 px-2 py-0.5 rounded-full text-[9px] font-black">{totalItems} ítems</span>
+                    <span className="text-[9px] font-black uppercase tracking-[0.2em] opacity-70">Total</span>
                   </div>
-                  <span className="text-3xl font-black tracking-tighter">${total.toLocaleString()}</span>
+                  <span className="text-2xl font-black tracking-tighter">${total.toLocaleString()}</span>
                 </div>
               </div>
               
               <motion.button 
                 whileTap={{ scale: 0.9 }}
                 onClick={clearCalc}
-                className="bg-white/20 hover:bg-white/30 p-3 rounded-2xl transition-colors backdrop-blur-md border border-white/10 relative z-10"
+                className="bg-white/20 hover:bg-white/30 p-2.5 rounded-xl transition-colors backdrop-blur-md border border-white/10 relative z-10"
               >
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5" />
               </motion.button>
             </div>
           </div>
