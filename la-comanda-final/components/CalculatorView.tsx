@@ -93,7 +93,7 @@ const CalculatorView: React.FC<CalculatorViewProps> = ({ menus, dishes, themeCol
         </div>
 
       {/* Dish Selection Grid - 2 Columns for better POS feel */}
-      <div className="grid grid-cols-2 gap-3 pb-96 mt-2">
+      <div className="grid grid-cols-2 gap-3 pb-32 mt-2">
         {filteredDishes.map(dish => {
           const qty = calcItems[dish.id] || 0;
           const menu = menus.find(m => m.id === dish.menuId);
