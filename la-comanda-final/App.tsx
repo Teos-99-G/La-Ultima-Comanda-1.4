@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Settings, ShoppingCart, BarChart3, Palette, Calculator } from 'lucide-react';
 import { Menu, Dish, ViewType, ThemeColor } from './types';
@@ -98,8 +97,10 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen max-w-md mx-auto bg-white shadow-2xl relative overflow-hidden text-slate-900">
-      <header className={`bg-${themeColor}-600 text-white p-4 shadow-md z-10 flex justify-between items-center transition-colors duration-500`}>
+    <div className="flex flex-col h-screen max-w-md mx-auto bg-white shadow-2xl relative text-slate-900">
+
+      {/* HEADER FIJO */}
+      <header className={`sticky top-0 bg-${themeColor}-600 text-white p-4 shadow-md z-30 flex justify-between items-center transition-colors duration-500`}>
         <div className="flex items-center gap-2 flex-1">
           <input 
             type="text"
@@ -125,7 +126,7 @@ const App: React.FC = () => {
               V 1.4
             </button>
             {showAuthor && (
-              <div className="absolute right-0 top-full mt-2 bg-slate-800 text-white text-[10px] py-2 px-3 rounded shadow-xl whitespace-nowrap z-50 animate-in fade-in slide-in-from-top-1 border border-slate-700">
+              <div className="absolute right-0 top-full mt-2 bg-slate-800 text-white text-[10px] py-2 px-3 rounded shadow-xl whitespace-nowrap z-50 border border-slate-700">
                 By: Johan Mateo García Sánchez
               </div>
             )}
@@ -133,7 +134,8 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto no-scrollbar p-4 pb-20 bg-slate-50">
+      {/* CONTENIDO QUE SCROLLEA */}
+      <main className="flex-1 overflow-y-auto p-4 bg-slate-50">
         {activeView === 'admin' && (
           <AdminView 
             menus={menus} 
@@ -167,7 +169,8 @@ const App: React.FC = () => {
         )}
       </main>
 
-      <nav className="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around p-2 z-20 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
+      {/* NAV FIJO ABAJO */}
+      <nav className="sticky bottom-0 bg-white border-t border-slate-200 flex justify-around p-2 z-30 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
         <button onClick={() => setActiveView('admin')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeView === 'admin' ? `bg-${themeColor}-50 text-${themeColor}-600` : 'text-slate-400'}`}>
           <Settings className="w-6 h-6" /><span className="text-[10px] mt-1 font-bold">AJUSTES</span>
         </button>
@@ -181,6 +184,7 @@ const App: React.FC = () => {
           <BarChart3 className="w-6 h-6" /><span className="text-[10px] mt-1 font-bold">CIERRE</span>
         </button>
       </nav>
+
     </div>
   );
 };
