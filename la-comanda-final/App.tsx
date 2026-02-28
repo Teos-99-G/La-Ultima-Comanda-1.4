@@ -60,7 +60,7 @@ const App: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `menu_jana_${new Date().toISOString().split('T')[0]}.txt`;
+    link.download = `menu_${new Date().toISOString().split('T')[0]}.txt`;
     link.click();
     URL.revokeObjectURL(url);
   };
