@@ -114,15 +114,15 @@ const CalculatorView: React.FC<CalculatorViewProps> = ({ menus, dishes, themeCol
               layout
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className={`relative group p-3 rounded-2xl border transition-all duration-300 flex flex-col justify-between min-h-[100px] ${
+              className={`relative group p-2.5 rounded-2xl border transition-all duration-300 flex flex-col justify-between min-h-[85px] ${
                 qty > 0 
                   ? (isSpecial ? 'bg-amber-50 border-amber-200 ring-2 ring-amber-500/20' : `bg-${themeColor}-50 border-${themeColor}-200 ring-2 ring-${themeColor}-500/20`) 
                   : 'bg-white border-slate-100 hover:border-slate-200 shadow-sm'
               }`}
             >
-              <div className="flex flex-col mb-2">
-                <span className="text-xs font-bold text-slate-800 line-clamp-2 leading-tight mb-1">{dish.name}</span>
-                <span className={`text-sm font-black ${isSpecial ? 'text-amber-600' : `text-${themeColor}-600`}`}>
+              <div className="flex flex-col mb-1">
+                <span className="text-[11px] font-bold text-slate-800 line-clamp-2 leading-tight mb-0.5">{dish.name}</span>
+                <span className={`text-xs font-black ${isSpecial ? 'text-amber-600' : `text-${themeColor}-600`}`}>
                   ${dish.price.toLocaleString()}
                 </span>
               </div>
@@ -136,9 +136,9 @@ const CalculatorView: React.FC<CalculatorViewProps> = ({ menus, dishes, themeCol
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -10 }}
                         onClick={() => updateCalc(dish.id, -1)}
-                        className="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-500 shadow-sm active:scale-90"
+                        className="w-6 h-6 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-500 shadow-sm active:scale-90"
                       >
-                        <Minus className="w-3.5 h-3.5" />
+                        <Minus className="w-3 h-3" />
                       </motion.button>
                     )}
                   </AnimatePresence>
@@ -148,7 +148,7 @@ const CalculatorView: React.FC<CalculatorViewProps> = ({ menus, dishes, themeCol
                       <motion.span 
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className="w-5 text-center text-xs font-black text-slate-700"
+                        className="w-4 text-center text-[10px] font-black text-slate-700"
                       >
                         {qty}
                       </motion.span>
@@ -159,11 +159,11 @@ const CalculatorView: React.FC<CalculatorViewProps> = ({ menus, dishes, themeCol
                 <motion.button 
                   whileTap={{ scale: 0.9 }}
                   onClick={() => updateCalc(dish.id, 1)}
-                  className={`w-9 h-9 flex items-center justify-center rounded-xl text-white shadow-md active:scale-95 ${
+                  className={`w-8 h-8 flex items-center justify-center rounded-xl text-white shadow-md active:scale-95 ${
                     isSpecial ? 'bg-amber-500 shadow-amber-200' : `bg-${themeColor}-600 shadow-${themeColor}-200`
                   }`}
                 >
-                  <Plus className="w-5 h-5" />
+                  <Plus className="w-4 h-4" />
                 </motion.button>
               </div>
 
@@ -177,7 +177,7 @@ const CalculatorView: React.FC<CalculatorViewProps> = ({ menus, dishes, themeCol
         })}
       </div>
 
-     {/* Floating Modern Checkout Panel - Fixed and centered properly */}
+      {/* Floating Modern Checkout Panel - Fixed and centered properly */}
       <AnimatePresence>
         {total > 0 && (
           <motion.div 
