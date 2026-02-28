@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { Calculator, Plus, Minus, Search, Trash2, X, Banknote, ShoppingBag, ReceiptText, Info } from 'lucide-react';
+import { Calculator, Plus, Minus, Trash2, X, Banknote, ShoppingBag, ReceiptText, Info } from 'lucide-react';
 import { Menu, Dish, ThemeColor } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -12,7 +12,6 @@ interface CalculatorViewProps {
 
 const CalculatorView: React.FC<CalculatorViewProps> = ({ menus, dishes, themeColor }) => {
   const [calcItems, setCalcItems] = useState<Record<string, number>>({});
-  const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<string>(menus[0]?.id || '');
   const [receivedAmount, setReceivedAmount] = useState<string>('');
   const [showDescription, setShowDescription] = useState<Record<string, boolean>>({});
@@ -39,8 +38,8 @@ const CalculatorView: React.FC<CalculatorViewProps> = ({ menus, dishes, themeCol
   };
 
   const filteredDishes = useMemo(() => dishes.filter(d => 
-    (searchQuery ? d.name.toLowerCase().includes(searchQuery.toLowerCase()) : d.menuId === activeTab)
-  ), [dishes, searchQuery, activeTab]);
+    d.menuId === activeTab
+  ), [dishes, activeTab]);
 
   const total = useMemo(() => Object.entries(calcItems).reduce((acc, [dishId, qty]) => {
     const dish = dishes.find(d => d.id === dishId);
@@ -75,20 +74,8 @@ const CalculatorView: React.FC<CalculatorViewProps> = ({ menus, dishes, themeCol
           </motion.button>
         </div>
 
-        <div className="relative mb-4 group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 transition-colors group-focus-within:text-indigo-500" />
-          <input 
-            type="text" 
-            placeholder="¿Qué busca el cliente?"
-            className={`w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-${themeColor}-500/20 focus:border-${themeColor}-500 transition-all`}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-
-        {!searchQuery && (
-          <div className="flex overflow-x-auto no-scrollbar gap-2 py-1">
-            {menus.map(menu => (
+        <div className="flex overflow-x-auto no-scrollbar gap-2 py-1">
+          {menus.map(menu => (
               <motion.button
                 key={menu.id}
                 whileTap={{ scale: 0.95 }}
@@ -103,11 +90,10 @@ const CalculatorView: React.FC<CalculatorViewProps> = ({ menus, dishes, themeCol
               </motion.button>
             ))}
           </div>
-        )}
-      </div>
+        </div>
 
       {/* Dish Selection Grid - 2 Columns for better POS feel */}
-      <div className="grid grid-cols-2 gap-3 pb-96">
+      <div className="grid grid-cols-2 gap-3 pb-96 mt-2">
         {filteredDishes.map(dish => {
           const qty = calcItems[dish.id] || 0;
           const menu = menus.find(m => m.id === dish.menuId);
@@ -120,7 +106,7 @@ const CalculatorView: React.FC<CalculatorViewProps> = ({ menus, dishes, themeCol
               layout
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className={`relative group p-2.5 rounded-2xl border transition-all duration-300 flex flex-col justify-between min-h-[60px] ${
+              className={`relative group p-2.5 rounded-2xl border transition-all duration-300 flex flex-col justify-between min-h-[50px] ${
                 qty > 0 
                   ? (isSpecial ? 'bg-amber-50 border-amber-200 ring-2 ring-amber-500/20' : `bg-${themeColor}-50 border-${themeColor}-200 ring-2 ring-${themeColor}-500/20`) 
                   : 'bg-white border-slate-100 hover:border-slate-200 shadow-sm'
@@ -226,7 +212,7 @@ const CalculatorView: React.FC<CalculatorViewProps> = ({ menus, dishes, themeCol
                   <div className={`p-1.5 bg-${themeColor}-50 rounded-lg`}>
                     <Banknote className={`w-4 h-4 text-${themeColor}-600`} />
                   </div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">SABER VUELTAS</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">LAS VUELTAS</span>
                 </div>
                 <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
                   <motion.button 
@@ -314,7 +300,7 @@ const CalculatorView: React.FC<CalculatorViewProps> = ({ menus, dishes, themeCol
 
       {/* Empty State - Friendly */}
       {filteredDishes.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-20 px-10 text-center">
+        <div className="flex flex-col items-center justify-center py-10 px-10 text-center mt-4">
           <div className={`w-20 h-20 bg-${themeColor}-50 rounded-3xl flex items-center justify-center mb-6`}>
             <ShoppingBag className={`w-10 h-10 text-${themeColor}-300`} />
           </div>
